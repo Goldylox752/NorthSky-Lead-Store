@@ -2,154 +2,303 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NorthSky Lead Store – Buy Instant Roofing Leads</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>NorthSky Lead Store | Buy Instant Roofing Leads</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://js.stripe.com/v3/"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    body { background: linear-gradient(135deg, #0f172a 0%, #020617 100%); }
-    .lead-card:hover { transform: translateY(-4px); transition: all 0.2s ease; }
+    body {
+      background: radial-gradient(circle at 10% 30%, #0f172a, #020617);
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.2s ease;
+    }
+    .lead-card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .lead-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.5);
+      border-color: rgba(34, 211, 238, 0.5);
+    }
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 6px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-track {
+      background: #1e293b;
+      border-radius: 8px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: #38bdf8;
+      border-radius: 8px;
+    }
+    @keyframes pulse-green {
+      0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+      70% { box-shadow: 0 0 0 8px rgba(34,197,94,0); }
+      100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+    }
+    .success-pulse {
+      animation: pulse-green 0.6s ease-out;
+    }
   </style>
 </head>
 <body class="text-gray-200">
-  <div class="max-w-6xl mx-auto px-4 py-8">
-    <!-- Header -->
-    <div class="text-center mb-10">
-      <h1 class="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent">
-        🛒 NorthSky Lead Store
-      </h1>
-      <p class="text-gray-400 mt-2">Instant roofing leads – buy now, get contact details immediately</p>
-    </div>
 
-    <!-- Contractor Identity -->
-    <div class="bg-slate-800/50 backdrop-blur rounded-2xl p-5 border border-slate-700 mb-8">
-      <div class="flex flex-col md:flex-row gap-4 items-end">
-        <div class="flex-1">
-          <label class="block text-sm font-medium mb-1">Your Contractor ID</label>
-          <input type="text" id="contractorId" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2" placeholder="e.g., RooferPro_42">
-        </div>
-        <div class="flex-1">
-          <label class="block text-sm font-medium mb-1">Your Email (for receipt)</label>
-          <input type="email" id="contractorEmail" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2" placeholder="you@example.com">
-        </div>
-        <button id="saveIdentityBtn" class="bg-cyan-600 hover:bg-cyan-500 px-6 py-2 rounded-lg font-semibold">Save ID</button>
+  <div class="max-w-7xl mx-auto px-4 py-6 md:py-10">
+    <!-- Header with stats -->
+    <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
+      <div class="text-center md:text-left">
+        <h1 class="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-cyan-400 via-sky-400 to-teal-400 bg-clip-text text-transparent">
+          <i class="fas fa-store mr-2"></i>NorthSky Lead Store
+        </h1>
+        <p class="text-gray-400 mt-1 text-sm">Instant roofing leads · verified homeowner data · buy & scale</p>
       </div>
-      <div id="identityStatus" class="text-xs text-gray-400 mt-2"></div>
+      <div class="glass-card rounded-2xl px-5 py-2 flex gap-4 text-center">
+        <div>
+          <div class="text-xs text-gray-400">Available</div>
+          <div class="text-xl font-bold text-cyan-400" id="availableCount">0</div>
+        </div>
+        <div class="w-px bg-gray-600"></div>
+        <div>
+          <div class="text-xs text-gray-400">Purchased</div>
+          <div class="text-xl font-bold text-green-400" id="purchasedCount">0</div>
+        </div>
+      </div>
     </div>
 
-    <!-- Lead Store Grid -->
-    <div class="mb-6 flex justify-between items-center">
-      <h2 class="text-2xl font-semibold"><i class="fas fa-tags mr-2 text-amber-400"></i>Available Leads</h2>
-      <button id="refreshBtn" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm flex items-center gap-2">
-        <i class="fas fa-sync-alt"></i> Refresh
+    <!-- Contractor Identity Panel -->
+    <div class="glass-card rounded-2xl p-5 border border-slate-700/80 mb-8">
+      <div class="flex flex-wrap items-end gap-4">
+        <div class="flex-1 min-w-[180px]">
+          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">
+            <i class="fas fa-id-card mr-1"></i>Contractor ID
+          </label>
+          <input type="text" id="contractorId" class="w-full bg-slate-900/80 border border-slate-600 rounded-xl px-4 py-2.5 focus:outline-none focus:border-cyan-500 transition" placeholder="e.g., NORTHSKY-ROOF123">
+        </div>
+        <div class="flex-1 min-w-[200px]">
+          <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">
+            <i class="fas fa-envelope mr-1"></i>Email for receipts
+          </label>
+          <input type="email" id="contractorEmail" class="w-full bg-slate-900/80 border border-slate-600 rounded-xl px-4 py-2.5 focus:outline-none focus:border-cyan-500 transition" placeholder="you@roofingco.com">
+        </div>
+        <button id="saveIdentityBtn" class="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 px-6 py-2.5 rounded-xl font-semibold shadow-lg transition flex items-center gap-2">
+          <i class="fas fa-save"></i> Save Profile
+        </button>
+      </div>
+      <div id="identityStatus" class="text-xs text-cyan-300 mt-3 flex items-center gap-1"></div>
+    </div>
+
+    <!-- Tabs: Available Leads / My Purchases -->
+    <div class="flex gap-2 mb-5 border-b border-slate-700/60 pb-2">
+      <button id="tabAvailableBtn" class="tab-btn px-5 py-2 rounded-full font-semibold transition bg-cyan-600 text-white shadow-md">
+        <i class="fas fa-tag mr-1"></i> Available Leads
+      </button>
+      <button id="tabPurchasedBtn" class="tab-btn px-5 py-2 rounded-full font-semibold transition bg-slate-800 text-gray-300 hover:bg-slate-700">
+        <i class="fas fa-archive mr-1"></i> My Purchased Leads
       </button>
     </div>
-    <div id="leadsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div class="col-span-full text-center py-12 text-gray-400">Loading available leads...</div>
+
+    <!-- Filter Bar (only for available leads) -->
+    <div id="filterBar" class="flex flex-wrap gap-3 mb-6 items-center">
+      <div class="relative">
+        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+        <input type="text" id="searchInput" placeholder="Search by city, name, service..." class="pl-9 pr-4 py-2 bg-slate-800/80 border border-slate-600 rounded-xl text-sm w-64 focus:outline-none focus:border-cyan-500">
+      </div>
+      <select id="serviceFilter" class="bg-slate-800 border border-slate-600 rounded-xl px-4 py-2 text-sm">
+        <option value="all">All services</option>
+        <option value="Roof Repair">🛠️ Roof Repair</option>
+        <option value="Full Replacement">🏚️ Full Replacement</option>
+        <option value="Inspection">🔍 Inspection</option>
+        <option value="Gutter">💧 Gutter & Siding</option>
+      </select>
+      <button id="resetFiltersBtn" class="text-sm bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-xl transition"><i class="fas fa-undo-alt"></i> Reset</button>
     </div>
 
-    <!-- Purchase Modal (show after successful purchase) -->
-    <div id="purchaseModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-      <div class="bg-slate-800 rounded-2xl max-w-md w-full p-6 border border-cyan-500/50">
+    <!-- Leads Grid / Purchased Grid -->
+    <div id="leadsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="col-span-full text-center py-16 text-gray-400 glass-card rounded-2xl">
+        <i class="fas fa-spinner fa-pulse text-3xl mb-2"></i>
+        <p>Loading leads...</p>
+      </div>
+    </div>
+
+    <!-- Purchase Success Modal -->
+    <div id="purchaseModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-all">
+      <div class="bg-slate-800 rounded-2xl max-w-md w-full mx-4 p-6 border border-green-500/50 shadow-2xl transform transition-all scale-95">
         <div class="text-center">
-          <i class="fas fa-check-circle text-5xl text-green-500 mb-3"></i>
-          <h3 class="text-2xl font-bold mb-2">Lead Purchased!</h3>
-          <p id="purchasedLeadInfo" class="text-gray-300 mb-4"></p>
-          <div class="bg-slate-900 rounded-xl p-4 text-left mb-4">
-            <p class="font-mono text-sm break-all" id="leadContactDetails"></p>
+          <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-check-circle text-4xl text-green-400"></i>
           </div>
-          <button id="closeModalBtn" class="bg-cyan-600 hover:bg-cyan-500 px-6 py-2 rounded-lg">Close</button>
+          <h3 class="text-2xl font-bold mb-2">Lead Unlocked! ✅</h3>
+          <p id="purchasedLeadInfo" class="text-gray-300 mb-4"></p>
+          <div class="bg-slate-900 rounded-xl p-4 text-left mb-5 border border-slate-600">
+            <p class="text-xs text-gray-400 mb-1"><i class="fas fa-phone-alt"></i> Contact details</p>
+            <p id="leadContactDetails" class="font-mono text-sm break-words text-cyan-300"></p>
+          </div>
+          <button id="closeModalBtn" class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 px-6 py-2.5 rounded-xl font-semibold w-full transition">Continue</button>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    // ---------- Configuration ----------
-    // Change this to your actual backend URL (e.g., https://northsky-backend.onrender.com)
-    const BACKEND_URL = '';  // Leave empty to use same origin (if backend serves this page)
-    // Stripe public key – replace with your own from Stripe Dashboard
-    const STRIPE_PUBLIC_KEY = 'pk_test_YourStripePublicKeyHere';
-    let stripe = null;
-    if (STRIPE_PUBLIC_KEY !== 'pk_test_YourStripePublicKeyHere') {
-      stripe = Stripe(STRIPE_PUBLIC_KEY);
-    }
+    // ----------------------------- MOCK LEAD DATABASE (simulated backend) -----------------------------
+    const MOCK_LEADS = [
+      { id: "ld_001", name: "Michael Thompson", service: "Roof Repair", city: "Austin", postalCode: "78701", contact: "michael.t@example.com | (512) 555-1201", salePrice: 49, description: "Urgent leak repair, ready to hire this week." },
+      { id: "ld_002", name: "Sarah Jenkins", service: "Full Replacement", city: "Denver", postalCode: "80202", contact: "sarah.j@example.com | (303) 555-9823", salePrice: 79, description: "Insurance claim approved, full shingle replacement." },
+      { id: "ld_003", name: "David Rivera", service: "Inspection", city: "Phoenix", postalCode: "85001", contact: "david.r@example.com | (602) 555-4412", salePrice: 29, description: "Needs pre-sale inspection report for real estate." },
+      { id: "ld_004", name: "Linda Chen", service: "Gutter", city: "Portland", postalCode: "97201", contact: "linda.c@example.com | (503) 555-7783", salePrice: 35, description: "Gutter replacement + downspouts." },
+      { id: "ld_005", name: "Robert Hayes", service: "Roof Repair", city: "Dallas", postalCode: "75201", contact: "robert.h@example.com | (214) 555-5621", salePrice: 55, description: "Storm damage, needs quick repair." },
+      { id: "ld_006", name: "Jessica Wu", service: "Full Replacement", city: "Seattle", postalCode: "98101", contact: "jessica.w@example.com | (206) 555-3490", salePrice: 89, description: "Complete tear-off, 2500 sq ft, budget ready." },
+      { id: "ld_007", name: "Carlos Mendez", service: "Inspection", city: "Miami", postalCode: "33101", contact: "carlos.m@example.com | (305) 555-2234", salePrice: 39, description: "Yearly roof certification needed." },
+      { id: "ld_008", name: "Emily Foster", service: "Roof Repair", city: "Atlanta", postalCode: "30301", contact: "emily.f@example.com | (404) 555-6780", salePrice: 45, description: "Missing shingles after windstorm." }
+    ];
+
+    // Storage keys
+    const STORAGE_CONTRACTOR_ID = "northsky_leadstore_contractor_id";
+    const STORAGE_CONTRACTOR_EMAIL = "northsky_leadstore_contractor_email";
+    const STORAGE_PURCHASED_LEADS = "northsky_purchased_leads";   // store array of purchased lead objects
+
+    // Global state
+    let availableLeads = [...MOCK_LEADS];
+    let purchasedLeads = [];
+    let currentContractor = { id: "", email: "" };
+    let activeTab = "available"; // "available" or "purchased"
+    let filters = { search: "", service: "all" };
 
     // DOM elements
-    const contractorIdInput = document.getElementById('contractorId');
-    const contractorEmailInput = document.getElementById('contractorEmail');
-    const saveIdentityBtn = document.getElementById('saveIdentityBtn');
-    const refreshBtn = document.getElementById('refreshBtn');
-    const leadsGrid = document.getElementById('leadsGrid');
-    const identityStatus = document.getElementById('identityStatus');
-    const purchaseModal = document.getElementById('purchaseModal');
-    const purchasedLeadInfo = document.getElementById('purchasedLeadInfo');
-    const leadContactDetails = document.getElementById('leadContactDetails');
-    const closeModalBtn = document.getElementById('closeModalBtn');
+    const leadsGridEl = document.getElementById("leadsGrid");
+    const contractorIdInput = document.getElementById("contractorId");
+    const contractorEmailInput = document.getElementById("contractorEmail");
+    const saveIdentityBtn = document.getElementById("saveIdentityBtn");
+    const identityStatus = document.getElementById("identityStatus");
+    const tabAvailableBtn = document.getElementById("tabAvailableBtn");
+    const tabPurchasedBtn = document.getElementById("tabPurchasedBtn");
+    const filterBar = document.getElementById("filterBar");
+    const searchInput = document.getElementById("searchInput");
+    const serviceFilter = document.getElementById("serviceFilter");
+    const resetFiltersBtn = document.getElementById("resetFiltersBtn");
+    const availableCountSpan = document.getElementById("availableCount");
+    const purchasedCountSpan = document.getElementById("purchasedCount");
+    const purchaseModal = document.getElementById("purchaseModal");
+    const purchasedLeadInfoSpan = document.getElementById("purchasedLeadInfo");
+    const leadContactDetailsSpan = document.getElementById("leadContactDetails");
+    const closeModalBtn = document.getElementById("closeModalBtn");
 
-    // Load saved contractor identity
-    function loadIdentity() {
-      const savedId = localStorage.getItem('leadstore_contractor_id');
-      const savedEmail = localStorage.getItem('leadstore_contractor_email');
+    // Helper: load data from localStorage
+    function loadPurchasedLeads() {
+      const stored = localStorage.getItem(STORAGE_PURCHASED_LEADS);
+      if (stored) {
+        try {
+          purchasedLeads = JSON.parse(stored);
+        } catch(e) { purchasedLeads = []; }
+      } else {
+        purchasedLeads = [];
+      }
+      // update available leads: remove any that have been purchased
+      const purchasedIds = new Set(purchasedLeads.map(l => l.id));
+      availableLeads = MOCK_LEADS.filter(lead => !purchasedIds.has(lead.id));
+    }
+
+    function savePurchasedLeads() {
+      localStorage.setItem(STORAGE_PURCHASED_LEADS, JSON.stringify(purchasedLeads));
+      // refresh available leads after purchase
+      const purchasedIds = new Set(purchasedLeads.map(l => l.id));
+      availableLeads = MOCK_LEADS.filter(lead => !purchasedIds.has(lead.id));
+      updateStats();
+    }
+
+    function loadContractorIdentity() {
+      const savedId = localStorage.getItem(STORAGE_CONTRACTOR_ID);
+      const savedEmail = localStorage.getItem(STORAGE_CONTRACTOR_EMAIL);
       if (savedId) contractorIdInput.value = savedId;
       if (savedEmail) contractorEmailInput.value = savedEmail;
+      currentContractor.id = savedId || "";
+      currentContractor.email = savedEmail || "";
     }
-    function saveIdentity() {
+
+    function saveContractorIdentity() {
       const id = contractorIdInput.value.trim();
       const email = contractorEmailInput.value.trim();
       if (!id || !email) {
-        identityStatus.innerText = 'Both Contractor ID and Email are required to purchase leads.';
-        return;
+        identityStatus.innerHTML = '<i class="fas fa-exclamation-triangle text-amber-400"></i> Both Contractor ID and Email are required.';
+        setTimeout(() => identityStatus.innerHTML = '', 3000);
+        return false;
       }
-      localStorage.setItem('leadstore_contractor_id', id);
-      localStorage.setItem('leadstore_contractor_email', email);
-      identityStatus.innerText = 'Identity saved. You can now buy leads.';
-      setTimeout(() => identityStatus.innerText = '', 3000);
+      localStorage.setItem(STORAGE_CONTRACTOR_ID, id);
+      localStorage.setItem(STORAGE_CONTRACTOR_EMAIL, email);
+      currentContractor.id = id;
+      currentContractor.email = email;
+      identityStatus.innerHTML = '<i class="fas fa-check-circle text-green-400"></i> Profile saved successfully.';
+      setTimeout(() => identityStatus.innerHTML = '', 2500);
+      return true;
     }
 
-    // Fetch leads for sale from backend
-    async function fetchForSaleLeads() {
-      try {
-        const url = BACKEND_URL ? `${BACKEND_URL}/api/leads/for-sale` : '/api/leads/for-sale';
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('Failed to fetch leads');
-        return await res.json();
-      } catch (err) {
-        console.error('Error fetching leads:', err);
-        return [];
+    function updateStats() {
+      availableCountSpan.innerText = availableLeads.length;
+      purchasedCountSpan.innerText = purchasedLeads.length;
+    }
+
+    // Filter available leads based on search & service
+    function getFilteredLeads() {
+      let filtered = [...availableLeads];
+      if (filters.search.trim()) {
+        const term = filters.search.toLowerCase();
+        filtered = filtered.filter(lead => 
+          lead.name.toLowerCase().includes(term) || 
+          lead.city.toLowerCase().includes(term) ||
+          lead.service.toLowerCase().includes(term) ||
+          lead.postalCode.includes(term)
+        );
+      }
+      if (filters.service !== "all") {
+        filtered = filtered.filter(lead => lead.service === filters.service);
+      }
+      return filtered;
+    }
+
+    // Render based on active tab
+    function render() {
+      if (activeTab === "available") {
+        const filtered = getFilteredLeads();
+        renderAvailableLeads(filtered);
+      } else {
+        renderPurchasedLeads();
       }
     }
 
-    // Render leads grid
-    async function renderLeads() {
-      leadsGrid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-400">Loading...</div>';
-      const leads = await fetchForSaleLeads();
-      if (leads.length === 0) {
-        leadsGrid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-400">No leads available for sale right now. Check back later.</div>';
+    function renderAvailableLeads(leadsArray) {
+      if (!leadsArray.length) {
+        leadsGridEl.innerHTML = `<div class="col-span-full text-center py-16 text-gray-400 glass-card rounded-2xl">
+          <i class="fas fa-inbox text-4xl mb-2 opacity-40"></i>
+          <p>No leads match your filters. Try resetting or check back later.</p>
+        </div>`;
         return;
       }
-      leadsGrid.innerHTML = '';
-      leads.forEach(lead => {
-        const card = document.createElement('div');
-        card.className = 'bg-slate-800/50 backdrop-blur rounded-2xl border border-slate-700 p-5 lead-card';
-        card.innerHTML = `
+      leadsGridEl.innerHTML = leadsArray.map(lead => `
+        <div class="glass-card rounded-2xl border border-slate-700/70 p-5 lead-card">
           <div class="flex justify-between items-start mb-2">
-            <span class="text-xs font-mono text-cyan-400">${lead.id.slice(0,8)}...</span>
-            <span class="bg-amber-500/20 text-amber-300 text-xs px-2 py-0.5 rounded-full">$${lead.salePrice}</span>
+            <span class="text-xs font-mono text-cyan-400 bg-slate-900/60 px-2 py-0.5 rounded-full">${lead.id}</span>
+            <span class="bg-emerald-500/20 text-emerald-300 text-sm font-bold px-3 py-0.5 rounded-full">$${lead.salePrice}</span>
           </div>
-          <h3 class="text-xl font-bold">${escapeHtml(lead.name)}</h3>
-          <p class="text-gray-300 text-sm mt-1"><i class="fas fa-tools mr-1"></i>${escapeHtml(lead.service)}</p>
-          <p class="text-gray-400 text-sm mt-2"><i class="fas fa-map-marker-alt mr-1"></i>${escapeHtml(lead.city)} • ${escapeHtml(lead.postalCode)}</p>
-          <div class="mt-4 flex gap-2">
-            <button class="buy-now-btn w-full bg-green-600 hover:bg-green-500 py-2 rounded-lg font-semibold transition" data-id="${lead.id}" data-price="${lead.salePrice}" data-name="${escapeHtml(lead.name)}">
-              <i class="fas fa-bolt"></i> Buy Now $${lead.salePrice}
-            </button>
+          <h3 class="text-xl font-bold tracking-tight">${escapeHtml(lead.name)}</h3>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="bg-slate-700/60 text-xs px-2 py-0.5 rounded-full"><i class="fas fa-tools mr-1"></i>${escapeHtml(lead.service)}</span>
           </div>
-        `;
-        leadsGrid.appendChild(card);
-      });
-      // Attach buy handlers
-      document.querySelectorAll('.buy-now-btn').forEach(btn => {
+          <p class="text-gray-300 text-sm mt-2"><i class="fas fa-map-marker-alt mr-1 text-cyan-400"></i>${escapeHtml(lead.city)} · ${lead.postalCode}</p>
+          <p class="text-gray-400 text-xs mt-2 line-clamp-1">${escapeHtml(lead.description)}</p>
+          <button class="buy-lead-btn w-full mt-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-2" data-id="${lead.id}" data-price="${lead.salePrice}" data-name="${escapeHtml(lead.name)}">
+            <i class="fas fa-bolt"></i> Buy Now — $${lead.salePrice}
+          </button>
+        </div>
+      `).join('');
+
+      // attach event listeners to buy buttons
+      document.querySelectorAll('.buy-lead-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           const leadId = btn.getAttribute('data-id');
           const price = parseFloat(btn.getAttribute('data-price'));
@@ -159,93 +308,135 @@
       });
     }
 
-    // Purchase flow: either Stripe Checkout or mock (if no Stripe key)
-    async function initiatePurchase(leadId, price, leadName) {
-      const contractorId = contractorIdInput.value.trim();
-      const contractorEmail = contractorEmailInput.value.trim();
-      if (!contractorId || !contractorEmail) {
-        alert('Please save your Contractor ID and Email first.');
+    function renderPurchasedLeads() {
+      if (purchasedLeads.length === 0) {
+        leadsGridEl.innerHTML = `<div class="col-span-full text-center py-16 text-gray-400 glass-card rounded-2xl">
+          <i class="fas fa-shopping-cart text-4xl mb-2 opacity-40"></i>
+          <p>You haven't purchased any leads yet. Go to "Available Leads" tab and buy your first lead.</p>
+        </div>`;
         return;
       }
-      // If Stripe is configured, create a Checkout Session
-      if (stripe) {
-        try {
-          const response = await fetch(`${BACKEND_URL || ''}/create-checkout-session`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              leadId,
-              price,
-              contractorId,
-              contractorEmail,
-              leadName,
-            }),
-          });
-          const session = await response.json();
-          if (session.id) {
-            await stripe.redirectToCheckout({ sessionId: session.id });
-          } else {
-            alert('Failed to create checkout session: ' + (session.error || 'Unknown error'));
-          }
-        } catch (err) {
-          alert('Network error: ' + err.message);
-        }
-      } else {
-        // Mock purchase (for testing without Stripe)
-        if (confirm(`[MOCK MODE] Buy lead "${leadName}" for $${price}? No real charge.`)) {
-          try {
-            const res = await fetch(`${BACKEND_URL || ''}/api/leads/${leadId}/purchase`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ contractorId, paymentMethod: 'mock' }),
-            });
-            const data = await res.json();
-            if (data.success) {
-              // Show purchased lead info
-              purchasedLeadInfo.innerText = `Lead: ${data.lead.name} (${data.lead.service})`;
-              leadContactDetails.innerText = `📞 Contact: ${data.lead.contact}\n📍 Address: ${data.lead.postalCode}\n💰 Paid: $${data.lead.price}`;
-              purchaseModal.classList.remove('hidden');
-              renderLeads(); // refresh grid
-            } else {
-              alert('Purchase failed: ' + (data.error || 'Unknown error'));
-            }
-          } catch (err) {
-            alert('Error: ' + err.message);
-          }
-        }
+      leadsGridEl.innerHTML = purchasedLeads.map(lead => `
+        <div class="glass-card rounded-2xl border border-slate-700/70 p-5 bg-slate-800/40">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-mono text-cyan-400">${lead.id}</span>
+            <span class="bg-green-500/20 text-green-300 text-xs px-2 py-0.5 rounded-full"><i class="fas fa-check-circle"></i> Purchased</span>
+          </div>
+          <h3 class="text-xl font-bold mt-1">${escapeHtml(lead.name)}</h3>
+          <p class="text-sm text-gray-300 mt-1"><i class="fas fa-tools mr-1"></i>${escapeHtml(lead.service)}</p>
+          <div class="mt-3 bg-slate-900/70 rounded-xl p-3 text-sm">
+            <i class="fas fa-phone-alt text-cyan-400 mr-2"></i> <span class="font-mono text-xs break-all">${escapeHtml(lead.contact)}</span>
+          </div>
+          <p class="text-gray-400 text-xs mt-3"><i class="far fa-calendar-alt"></i> Purchased on ${lead.purchasedDate || new Date().toLocaleDateString()}</p>
+        </div>
+      `).join('');
+    }
+
+    // Purchase logic (simulated payment with validation)
+    function initiatePurchase(leadId, price, leadName) {
+      if (!currentContractor.id || !currentContractor.email) {
+        identityStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Please save your Contractor ID & Email before purchasing.';
+        setTimeout(() => identityStatus.innerHTML = '', 3000);
+        return;
+      }
+
+      const leadToBuy = availableLeads.find(l => l.id === leadId);
+      if (!leadToBuy) {
+        alert("Lead no longer available.");
+        render();
+        return;
+      }
+
+      // Simulated checkout (mock payment)
+      if (confirm(`💳 SIMULATED PAYMENT: Buy "${leadToBuy.name}" (${leadToBuy.service}) for $${price}? No real charge.`)) {
+        // Add to purchased leads
+        const purchasedLead = { ...leadToBuy, purchasedDate: new Date().toISOString().slice(0,10), buyerId: currentContractor.id, buyerEmail: currentContractor.email };
+        purchasedLeads.push(purchasedLead);
+        savePurchasedLeads();
+        // Show modal with contact details
+        purchasedLeadInfoSpan.innerText = `${purchasedLead.name} — ${purchasedLead.service} ($${purchasedLead.salePrice})`;
+        leadContactDetailsSpan.innerText = `${purchasedLead.contact} | Address: ${purchasedLead.city}, ${purchasedLead.postalCode}`;
+        purchaseModal.classList.remove("hidden");
+        // add success pulse to modal
+        render();  // refresh grids
+        updateStats();
+        // Optional: send fake receipt to console
+        console.log(`[RECEIPT] Lead purchased by ${currentContractor.id} (${currentContractor.email}) - ${purchasedLead.name}`);
       }
     }
 
-    // Stripe webhook success handling (after redirect)
-    function handleStripeSuccess() {
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('success') === 'true') {
-        // Show a success message and refresh leads
-        alert('Payment successful! Your lead details will appear below. Check your email.');
-        renderLeads();
-        window.history.replaceState({}, document.title, window.location.pathname);
-      } else if (urlParams.get('canceled') === 'true') {
-        alert('Payment canceled. No charge was made.');
-      }
-    }
-
+    // UI helpers
     function escapeHtml(str) {
       if (!str) return '';
       return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]));
     }
 
+    function resetFilters() {
+      filters.search = "";
+      filters.service = "all";
+      searchInput.value = "";
+      serviceFilter.value = "all";
+      render();
+    }
+
     // Event listeners
-    saveIdentityBtn.addEventListener('click', saveIdentity);
-    refreshBtn.addEventListener('click', renderLeads);
-    closeModalBtn.addEventListener('click', () => purchaseModal.classList.add('hidden'));
+    function bindEvents() {
+      saveIdentityBtn.addEventListener("click", () => {
+        if (saveContractorIdentity()) {
+          render();
+        }
+      });
 
-    // Initial load
-    loadIdentity();
-    renderLeads();
-    handleStripeSuccess();
+      tabAvailableBtn.addEventListener("click", () => {
+        activeTab = "available";
+        tabAvailableBtn.classList.remove("bg-slate-800", "text-gray-300");
+        tabAvailableBtn.classList.add("bg-cyan-600", "text-white", "shadow-md");
+        tabPurchasedBtn.classList.remove("bg-cyan-600", "text-white", "shadow-md");
+        tabPurchasedBtn.classList.add("bg-slate-800", "text-gray-300");
+        filterBar.classList.remove("hidden");
+        render();
+      });
 
-    // Optional: auto-refresh every 30 seconds
-    setInterval(renderLeads, 30000);
+      tabPurchasedBtn.addEventListener("click", () => {
+        activeTab = "purchased";
+        tabPurchasedBtn.classList.remove("bg-slate-800", "text-gray-300");
+        tabPurchasedBtn.classList.add("bg-cyan-600", "text-white", "shadow-md");
+        tabAvailableBtn.classList.remove("bg-cyan-600", "text-white", "shadow-md");
+        tabAvailableBtn.classList.add("bg-slate-800", "text-gray-300");
+        filterBar.classList.add("hidden");
+        render();
+      });
+
+      searchInput.addEventListener("input", (e) => {
+        filters.search = e.target.value;
+        if (activeTab === "available") render();
+      });
+
+      serviceFilter.addEventListener("change", (e) => {
+        filters.service = e.target.value;
+        if (activeTab === "available") render();
+      });
+
+      resetFiltersBtn.addEventListener("click", resetFilters);
+      closeModalBtn.addEventListener("click", () => {
+        purchaseModal.classList.add("hidden");
+      });
+      // close modal when clicking outside backdrop (simple)
+      purchaseModal.addEventListener("click", (e) => {
+        if (e.target === purchaseModal) purchaseModal.classList.add("hidden");
+      });
+    }
+
+    // initial load
+    function init() {
+      loadPurchasedLeads();
+      loadContractorIdentity();
+      updateStats();
+      bindEvents();
+      render();
+    }
+
+    init();
   </script>
 </body>
 </html>
