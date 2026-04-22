@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>NorthSky Lead Store | Buy Instant Roofing Leads</title>
+  <title>NorthSky Lead Store 2026 | Buy Instant Roofing Leads</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
@@ -44,6 +44,16 @@
     .success-pulse {
       animation: pulse-green 0.6s ease-out;
     }
+    .gradient-border {
+      background: linear-gradient(90deg, #06b6d4, #3b82f6, #8b5cf6);
+      padding: 2px;
+      border-radius: 1.5rem;
+    }
+    .gradient-border > div {
+      background: #0f172a;
+      border-radius: 1.5rem;
+      height: 100%;
+    }
   </style>
 </head>
 <body class="text-gray-200">
@@ -53,7 +63,7 @@
     <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
       <div class="text-center md:text-left">
         <h1 class="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-cyan-400 via-sky-400 to-teal-400 bg-clip-text text-transparent">
-          <i class="fas fa-store mr-2"></i>NorthSky Lead Store
+          <i class="fas fa-store mr-2"></i>NorthSky Lead Store 2026
         </h1>
         <p class="text-gray-400 mt-1 text-sm">Instant roofing leads · verified homeowner data · buy & scale</p>
       </div>
@@ -70,7 +80,7 @@
       </div>
     </div>
 
-    <!-- Contractor Identity Panel -->
+    <!-- Contractor Identity Panel (required) -->
     <div class="glass-card rounded-2xl p-5 border border-slate-700/80 mb-8">
       <div class="flex flex-wrap items-end gap-4">
         <div class="flex-1 min-w-[180px]">
@@ -92,7 +102,7 @@
       <div id="identityStatus" class="text-xs text-cyan-300 mt-3 flex items-center gap-1"></div>
     </div>
 
-    <!-- Tabs: Available Leads / My Purchases -->
+    <!-- Tabs -->
     <div class="flex gap-2 mb-5 border-b border-slate-700/60 pb-2">
       <button id="tabAvailableBtn" class="tab-btn px-5 py-2 rounded-full font-semibold transition bg-cyan-600 text-white shadow-md">
         <i class="fas fa-tag mr-1"></i> Available Leads
@@ -118,7 +128,7 @@
       <button id="resetFiltersBtn" class="text-sm bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-xl transition"><i class="fas fa-undo-alt"></i> Reset</button>
     </div>
 
-    <!-- Leads Grid / Purchased Grid -->
+    <!-- Leads Grid -->
     <div id="leadsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div class="col-span-full text-center py-16 text-gray-400 glass-card rounded-2xl">
         <i class="fas fa-spinner fa-pulse text-3xl mb-2"></i>
@@ -146,7 +156,7 @@
   </div>
 
   <script>
-    // ----------------------------- MOCK LEAD DATABASE (simulated backend) -----------------------------
+    // ----------------------------- LEAD DATABASE (simulated backend) -----------------------------
     const MOCK_LEADS = [
       { id: "ld_001", name: "Michael Thompson", service: "Roof Repair", city: "Austin", postalCode: "78701", contact: "michael.t@example.com | (512) 555-1201", salePrice: 49, description: "Urgent leak repair, ready to hire this week." },
       { id: "ld_002", name: "Sarah Jenkins", service: "Full Replacement", city: "Denver", postalCode: "80202", contact: "sarah.j@example.com | (303) 555-9823", salePrice: 79, description: "Insurance claim approved, full shingle replacement." },
@@ -161,13 +171,12 @@
     // Storage keys
     const STORAGE_CONTRACTOR_ID = "northsky_leadstore_contractor_id";
     const STORAGE_CONTRACTOR_EMAIL = "northsky_leadstore_contractor_email";
-    const STORAGE_PURCHASED_LEADS = "northsky_purchased_leads";   // store array of purchased lead objects
+    const STORAGE_PURCHASED_LEADS = "northsky_purchased_leads";
 
-    // Global state
     let availableLeads = [...MOCK_LEADS];
     let purchasedLeads = [];
     let currentContractor = { id: "", email: "" };
-    let activeTab = "available"; // "available" or "purchased"
+    let activeTab = "available";
     let filters = { search: "", service: "all" };
 
     // DOM elements
@@ -189,7 +198,7 @@
     const leadContactDetailsSpan = document.getElementById("leadContactDetails");
     const closeModalBtn = document.getElementById("closeModalBtn");
 
-    // Helper: load data from localStorage
+    // Load purchased leads from localStorage
     function loadPurchasedLeads() {
       const stored = localStorage.getItem(STORAGE_PURCHASED_LEADS);
       if (stored) {
@@ -199,14 +208,12 @@
       } else {
         purchasedLeads = [];
       }
-      // update available leads: remove any that have been purchased
       const purchasedIds = new Set(purchasedLeads.map(l => l.id));
       availableLeads = MOCK_LEADS.filter(lead => !purchasedIds.has(lead.id));
     }
 
     function savePurchasedLeads() {
       localStorage.setItem(STORAGE_PURCHASED_LEADS, JSON.stringify(purchasedLeads));
-      // refresh available leads after purchase
       const purchasedIds = new Set(purchasedLeads.map(l => l.id));
       availableLeads = MOCK_LEADS.filter(lead => !purchasedIds.has(lead.id));
       updateStats();
@@ -243,7 +250,6 @@
       purchasedCountSpan.innerText = purchasedLeads.length;
     }
 
-    // Filter available leads based on search & service
     function getFilteredLeads() {
       let filtered = [...availableLeads];
       if (filters.search.trim()) {
@@ -261,7 +267,6 @@
       return filtered;
     }
 
-    // Render based on active tab
     function render() {
       if (activeTab === "available") {
         const filtered = getFilteredLeads();
@@ -297,7 +302,6 @@
         </div>
       `).join('');
 
-      // attach event listeners to buy buttons
       document.querySelectorAll('.buy-lead-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           const leadId = btn.getAttribute('data-id');
@@ -332,7 +336,6 @@
       `).join('');
     }
 
-    // Purchase logic (simulated payment with validation)
     function initiatePurchase(leadId, price, leadName) {
       if (!currentContractor.id || !currentContractor.email) {
         identityStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Please save your Contractor ID & Email before purchasing.';
@@ -347,25 +350,25 @@
         return;
       }
 
-      // Simulated checkout (mock payment)
+      // Simulated payment confirmation
       if (confirm(`💳 SIMULATED PAYMENT: Buy "${leadToBuy.name}" (${leadToBuy.service}) for $${price}? No real charge.`)) {
-        // Add to purchased leads
-        const purchasedLead = { ...leadToBuy, purchasedDate: new Date().toISOString().slice(0,10), buyerId: currentContractor.id, buyerEmail: currentContractor.email };
+        const purchasedLead = { 
+          ...leadToBuy, 
+          purchasedDate: new Date().toISOString().slice(0,10), 
+          buyerId: currentContractor.id, 
+          buyerEmail: currentContractor.email 
+        };
         purchasedLeads.push(purchasedLead);
         savePurchasedLeads();
-        // Show modal with contact details
         purchasedLeadInfoSpan.innerText = `${purchasedLead.name} — ${purchasedLead.service} ($${purchasedLead.salePrice})`;
         leadContactDetailsSpan.innerText = `${purchasedLead.contact} | Address: ${purchasedLead.city}, ${purchasedLead.postalCode}`;
         purchaseModal.classList.remove("hidden");
-        // add success pulse to modal
-        render();  // refresh grids
+        render();
         updateStats();
-        // Optional: send fake receipt to console
         console.log(`[RECEIPT] Lead purchased by ${currentContractor.id} (${currentContractor.email}) - ${purchasedLead.name}`);
       }
     }
 
-    // UI helpers
     function escapeHtml(str) {
       if (!str) return '';
       return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]));
@@ -379,12 +382,9 @@
       render();
     }
 
-    // Event listeners
     function bindEvents() {
       saveIdentityBtn.addEventListener("click", () => {
-        if (saveContractorIdentity()) {
-          render();
-        }
+        if (saveContractorIdentity()) render();
       });
 
       tabAvailableBtn.addEventListener("click", () => {
@@ -418,16 +418,12 @@
       });
 
       resetFiltersBtn.addEventListener("click", resetFilters);
-      closeModalBtn.addEventListener("click", () => {
-        purchaseModal.classList.add("hidden");
-      });
-      // close modal when clicking outside backdrop (simple)
+      closeModalBtn.addEventListener("click", () => purchaseModal.classList.add("hidden"));
       purchaseModal.addEventListener("click", (e) => {
         if (e.target === purchaseModal) purchaseModal.classList.add("hidden");
       });
     }
 
-    // initial load
     function init() {
       loadPurchasedLeads();
       loadContractorIdentity();
