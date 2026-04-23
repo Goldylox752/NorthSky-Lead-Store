@@ -1,0 +1,59 @@
+import Stripe from "stripe";
+import { createClient } from "@supabase/supabase-js";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2024-06-20",
+});
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+export default async function handler(req, res) {
+  try {
+    if (req.method !== "POST") {
+      return res.status(405).json({ error: "Method not allowed" });
+    }
+
+    const { session_id } = req.body;
+
+    if (!session_id) {
+      return res.status(400).json({ valid: false, error: "Missing session_id" });
+    }
+
+    // 1. Retrieve session from Stripe
+    const session = await stripe.checkout.sessions.retrieve(session_id);
+
+    if (!session || session.payment_status !== "paid") {
+      return res.json({ valid: false });
+    }
+
+    // 2. Check Supabase for stored session (optional but recommended)
+    const { data, error } = await supabase
+      .from("verified_sessions")
+      .select("*")
+      .eq("session_id", session_id)
+      .gt("expires_at", new Date().toISOString())
+      .maybeSingle();
+
+    if (error) {
+      return res.status(500).json({ valid: false, error: error.message });
+    }
+
+    if (!data) {
+      return res.json({ valid: false });
+    }
+
+    // 3. Return access + plan
+    return res.json({
+      valid: true,
+      plan: data.plan,
+      customer: session.customer_email || null,
+    });
+
+  } catch (err) {
+    console.error("verify-session error:", err);
+    return res.status(500).json({ valid: false, error: "Server error" });
+  }
+}
