@@ -3,37 +3,24 @@ import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
-  try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ error: "Method not allowed" });
-    }
+  const { plan, userId } = req.body;
 
-    const { plan } = req.body || {};
+  const session = await stripe.checkout.sessions.create({
+    mode: "subscription",
+    payment_method_types: ["card"],
+    line_items: [
+      {
+        price: process.env[`STRIPE_PRICE_${plan.toUpperCase()}`],
+        quantity: 1
+      }
+    ],
+    metadata: {
+      user_id: userId,
+      plan
+    },
+    success_url: `${process.env.DOMAIN}/dashboard?success=1`,
+    cancel_url: `${process.env.DOMAIN}/pricing`
+  });
 
-    const prices = {
-      starter: process.env.STRIPE_PRICE_STARTER,
-      pro: process.env.STRIPE_PRICE_PRO,
-      elite: process.env.STRIPE_PRICE_ELITE,
-    };
-
-    const priceId = prices[plan];
-
-    if (!priceId) {
-      return res.status(400).json({ error: "Invalid plan" });
-    }
-
-    const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${process.env.BASE_URL}/?success=true`,
-      cancel_url: `${process.env.BASE_URL}/?canceled=true`,
-      metadata: { plan },
-    });
-
-    return res.json({ url: session.url });
-
-  } catch (err) {
-    console.error("Checkout error:", err);
-    return res.status(500).json({ error: err.message });
-  }
+  res.json({ url: session.url });
 }
